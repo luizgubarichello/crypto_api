@@ -1,0 +1,33 @@
+version: '3'
+services:
+
+    redis:
+        image: redis:3.2.8
+        hostname: redis
+        ports:
+            - "6379:6379"
+
+    web:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        hostname: web
+        command: ./run_web.sh
+        volumes:
+            - .:/code:Z
+        ports:
+            - "8000:8000"
+        links:
+            - redis
+
+    worker:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        command: ./run_celery.sh
+        volumes:
+            - .:/code:Z
+        links:
+            - redis
+        depends_on:
+            - redis
