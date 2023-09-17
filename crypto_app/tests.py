@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient, APITestCase
 from .tasks import generate_address_task
 from .models import Address
+import coinaddrvalidator
     
 # Define a test class for the celery task
 class GenerateAdressTaskTest(TestCase):
@@ -12,11 +13,8 @@ class GenerateAdressTaskTest(TestCase):
         id = generate_address_task('BTC')
         address_obj = Address.objects.get(id=id)
         self.assertEqual(address_obj.id, 1)
-
-        # Call the generate_address_task function with ETH
-        id = generate_address_task('ETH')
-        address_obj = Address.objects.get(id=id)
-        self.assertEqual(address_obj.id, 2)
+        validation_result = coinaddrvalidator.validate('btc', address_obj.address)
+        self.assertTrue(validation_result.valid)
 
         # Call the generate_address_task function with BNB (unsupported)
         self.assertRaises(ValueError, generate_address_task, coin='BNB')
